@@ -62,16 +62,16 @@ def count_questions() -> int:
         return conn.execute("SELECT COUNT(*) FROM questions").fetchone()[0]
 
 
-def update_stats(user_id: int, correct: int, answered: int):
+def update_stats(user_id: int, correct: int, answered: int, sessions: int = 1):
     with get_conn() as conn:
         conn.execute(
             """INSERT INTO user_stats (user_id, total_sessions, total_correct, total_answered)
-               VALUES (?, 1, ?, ?)
+               VALUES (?, ?, ?, ?)
                ON CONFLICT(user_id) DO UPDATE SET
-                   total_sessions = total_sessions + 1,
+                   total_sessions = total_sessions + excluded.total_sessions,
                    total_correct = total_correct + excluded.total_correct,
                    total_answered = total_answered + excluded.total_answered""",
-            (user_id, correct, answered),
+            (user_id, sessions, correct, answered),
         )
 
 
